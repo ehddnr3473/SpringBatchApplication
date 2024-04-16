@@ -9,9 +9,14 @@ import org.springframework.batch.item.database.JdbcBatchItemWriter;
 import org.springframework.batch.item.database.JdbcCursorItemReader;
 import org.springframework.batch.item.database.builder.JdbcBatchItemWriterBuilder;
 import org.springframework.batch.item.database.builder.JdbcCursorItemReaderBuilder;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import yeolmok.tutorial.batchapp.batch.listener.JobCompletionNotificationListener;
+import yeolmok.tutorial.batchapp.batch.processor.CustomerCouponProcessor;
+import yeolmok.tutorial.batchapp.batch.processor.CustomerPointProcessor;
+import yeolmok.tutorial.batchapp.batch.record.Customer;
 
 import javax.sql.DataSource;
 
@@ -34,32 +39,46 @@ public class BatchConfiguration {
         return new JdbcCursorItemReaderBuilder<Customer>()
                 .name("jdbcCursorItemReader")
                 .dataSource(dataSource)
-                .sql("SELECT ID, Name, Point FROM CUSTOMER")
-                .rowMapper((rs, rowNum) -> new Customer(rs.getInt(1), rs.getString(2), rs.getInt(3)))
+                .sql("SELECT ID, Name, Point, CouponCount FROM CUSTOMER")
+                .rowMapper((rs, rowNum) -> new Customer(rs.getInt(1), rs.getString(2), rs.getInt(3), rs.getInt(4)))
                 .build();
     }
 
     @Bean
-    public CustomerItemProcessor processor() {
-        return new CustomerItemProcessor();
-    }
+    public CustomerPointProcessor customerPointProcessor() { return new CustomerPointProcessor(); }
 
     @Bean
-    public JdbcBatchItemWriter<Customer> writer(DataSource dataSource) {
+    public CustomerCouponProcessor customerCouponProcessor() { return new CustomerCouponProcessor(); }
+
+    @Bean
+    @Qualifier("pointWriter")
+    public JdbcBatchItemWriter<Customer> pointWriter(DataSource dataSource) {
         return new JdbcBatchItemWriterBuilder<Customer>()
-                .sql("UPDATE Customer SET Name = (:name), Point = (:point) WHERE ID = (:id)")
+                .sql("UPDATE Customer SET Point = (:point) WHERE ID = (:id)")
                 .dataSource(dataSource)
                 .beanMapped()
                 .build();
     }
 
     @Bean
-    public Job importUserJob(JobRepository jobRepository,
-                             Step step1,
-                             JobCompletionNotificationListener jobCompletionNotificationListener) {
-        return new JobBuilder("importUserJob", jobRepository)
+    @Qualifier("couponWriter")
+    public JdbcBatchItemWriter<Customer> couponWriter(DataSource dataSource) {
+        return new JdbcBatchItemWriterBuilder<Customer>()
+                .sql("UPDATE Customer SET CouponCount = (:couponCount) WHERE ID = (:id)")
+                .dataSource(dataSource)
+                .beanMapped()
+                .build();
+    }
+
+    @Bean
+    public Job customerEventJob(JobRepository jobRepository,
+                                @Qualifier("pointStep") Step pointStep,
+                                @Qualifier("couponStep") Step couponStep,
+                                JobCompletionNotificationListener jobCompletionNotificationListener) {
+        return new JobBuilder("customerEventJob", jobRepository)
                 .listener(jobCompletionNotificationListener)
-                .start(step1)
+                .start(pointStep)
+                .next(couponStep)
                 .build();
     }
 
@@ -69,16 +88,32 @@ public class BatchConfiguration {
      * Step already complete or not restartable, so no action to execute: StepExecution: id=1, version=3, name=step1, status=COMPLETED, exitStatus=COMPLETED, ...
      */
     @Bean
+    @Qualifier("pointStep")
     public Step step1(JobRepository jobRepository,
                       DataSourceTransactionManager transactionManager,
                       JdbcCursorItemReader<Customer> reader,
-                      CustomerItemProcessor processor,
-                      JdbcBatchItemWriter<Customer> writer) {
-        return new StepBuilder("step1", jobRepository)
+                      CustomerPointProcessor customerPointProcessor,
+                      @Qualifier("pointWriter") JdbcBatchItemWriter<Customer> pointWriter) {
+        return new StepBuilder("pointStep", jobRepository)
                 .<Customer, Customer> chunk(3, transactionManager)
                 .reader(reader)
-                .processor(processor)
-                .writer(writer)
+                .processor(customerPointProcessor)
+                .writer(pointWriter)
+                .build();
+    }
+
+    @Bean
+    @Qualifier("couponStep")
+    public Step couponStep(JobRepository jobRepository,
+                      DataSourceTransactionManager transactionManager,
+                      JdbcCursorItemReader<Customer> reader,
+                      CustomerCouponProcessor customerCouponProcessor,
+                      @Qualifier("couponWriter") JdbcBatchItemWriter<Customer> couponWriter) {
+        return new StepBuilder("couponStep", jobRepository)
+                .<Customer, Customer> chunk(3, transactionManager)
+                .reader(reader)
+                .processor(customerCouponProcessor)
+                .writer(couponWriter)
                 .build();
     }
 }

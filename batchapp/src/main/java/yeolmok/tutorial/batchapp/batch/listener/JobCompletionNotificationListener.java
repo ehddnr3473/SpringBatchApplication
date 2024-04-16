@@ -1,4 +1,4 @@
-package yeolmok.tutorial.batchapp.batch;
+package yeolmok.tutorial.batchapp.batch.listener;
 
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -9,6 +9,7 @@ import org.springframework.batch.core.JobExecutionListener;
 import org.springframework.jdbc.core.DataClassRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import yeolmok.tutorial.batchapp.batch.record.Customer;
 
 @Component
 @RequiredArgsConstructor
@@ -24,7 +25,7 @@ public class JobCompletionNotificationListener implements JobExecutionListener {
             logger.info("----JOB FINISHED.----");
 
             jdbcTemplate
-                    .query("SELECT ID, Name, Point FROM Customer", new DataClassRowMapper<>(Customer.class))
+                    .query("SELECT ID, Name, Point, CouponCount FROM Customer", new DataClassRowMapper<>(Customer.class))
                     .forEach(customer -> logger.info("Found <{{}}> in the database.", customer));
         }
     }

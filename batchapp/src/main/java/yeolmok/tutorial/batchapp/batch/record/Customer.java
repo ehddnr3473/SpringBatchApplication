@@ -1,4 +1,4 @@
-package yeolmok.tutorial.batchapp.batch;
+package yeolmok.tutorial.batchapp.batch.record;
 
 
 /*
@@ -9,4 +9,4 @@ package yeolmok.tutorial.batchapp.batch;
  * 4. hashCode()
  * 5. toString()
  */
-public record Customer(int id, String name, int point) {}
+public record Customer(int id, String name, int point, int couponCount) {}
