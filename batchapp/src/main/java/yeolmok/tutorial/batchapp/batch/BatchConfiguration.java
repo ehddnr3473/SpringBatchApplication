@@ -89,11 +89,11 @@ public class BatchConfiguration {
      */
     @Bean
     @Qualifier("pointStep")
-    public Step step1(JobRepository jobRepository,
-                      DataSourceTransactionManager transactionManager,
-                      JdbcCursorItemReader<Customer> reader,
-                      CustomerPointProcessor customerPointProcessor,
-                      @Qualifier("pointWriter") JdbcBatchItemWriter<Customer> pointWriter) {
+    public Step pointStep(JobRepository jobRepository,
+                          DataSourceTransactionManager transactionManager,
+                          JdbcCursorItemReader<Customer> reader,
+                          CustomerPointProcessor customerPointProcessor,
+                          @Qualifier("pointWriter") JdbcBatchItemWriter<Customer> pointWriter) {
         return new StepBuilder("pointStep", jobRepository)
                 .<Customer, Customer> chunk(3, transactionManager)
                 .reader(reader)
@@ -105,10 +105,10 @@ public class BatchConfiguration {
     @Bean
     @Qualifier("couponStep")
     public Step couponStep(JobRepository jobRepository,
-                      DataSourceTransactionManager transactionManager,
-                      JdbcCursorItemReader<Customer> reader,
-                      CustomerCouponProcessor customerCouponProcessor,
-                      @Qualifier("couponWriter") JdbcBatchItemWriter<Customer> couponWriter) {
+                           DataSourceTransactionManager transactionManager,
+                           JdbcCursorItemReader<Customer> reader,
+                           CustomerCouponProcessor customerCouponProcessor,
+                           @Qualifier("couponWriter") JdbcBatchItemWriter<Customer> couponWriter) {
         return new StepBuilder("couponStep", jobRepository)
                 .<Customer, Customer> chunk(3, transactionManager)
                 .reader(reader)
