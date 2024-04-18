@@ -30,11 +30,12 @@ public class BatchappApplicationTests {
 	private static final Logger logger = LoggerFactory.getLogger(BatchappApplicationTests.class);
 
 	@Autowired
-	private JobLauncherTestUtils jobLauncherTestUtils;
-
-	@Autowired
 	private JdbcTemplate jdbcTemplate;
 
+	@Autowired
+	private JobLauncherTestUtils jobLauncherTestUtils;
+
+	// TODO: Rollback
 	@Test
 	public void testJob(@Autowired Job job) throws Exception {
 		this.jobLauncherTestUtils.setJob(job);
