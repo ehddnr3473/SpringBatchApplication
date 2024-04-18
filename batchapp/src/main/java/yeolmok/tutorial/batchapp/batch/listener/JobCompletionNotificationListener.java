@@ -1,7 +1,6 @@
 package yeolmok.tutorial.batchapp.batch.listener;
 
 import lombok.RequiredArgsConstructor;
-import org.hibernate.engine.jdbc.batch.spi.Batch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.BatchStatus;
@@ -35,6 +34,8 @@ public class JobCompletionNotificationListener implements JobExecutionListener {
             jdbcTemplate
                     .query("SELECT ID, Name, Point, CouponCount FROM Customer", new DataClassRowMapper<>(Customer.class))
                     .forEach(customer -> logger.info("Found <{{}}> in the database.", customer));
+        } else if (jobExecution.getStatus() == BatchStatus.FAILED) {
+            logger.info("------JOB FAILURE.------");
         }
     }
 }
