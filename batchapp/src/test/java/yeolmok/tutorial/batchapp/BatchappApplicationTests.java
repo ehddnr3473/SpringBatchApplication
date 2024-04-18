@@ -12,9 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
-import org.springframework.transaction.support.TransactionTemplate;
-
-import javax.sql.DataSource;
 
 /*
  * Batch job을 테스트하는 것은 굉장히 중요함.
@@ -31,6 +28,7 @@ import javax.sql.DataSource;
 public class BatchappApplicationTests {
 
 	private static final Logger logger = LoggerFactory.getLogger(BatchappApplicationTests.class);
+
 	@Autowired
 	private JobLauncherTestUtils jobLauncherTestUtils;
 
@@ -38,7 +36,7 @@ public class BatchappApplicationTests {
 	private JdbcTemplate jdbcTemplate;
 
 	@Test
-	public void testJob(@Autowired Job job, @Autowired TransactionTemplate transactionTemplate) throws Exception {
+	public void testJob(@Autowired Job job) throws Exception {
 		this.jobLauncherTestUtils.setJob(job);
 
 		// Given
