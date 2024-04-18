@@ -1,6 +1,7 @@
 package yeolmok.tutorial.batchapp.batch.listener;
 
 import lombok.RequiredArgsConstructor;
+import org.hibernate.engine.jdbc.batch.spi.Batch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.BatchStatus;
@@ -20,9 +21,16 @@ public class JobCompletionNotificationListener implements JobExecutionListener {
     private final JdbcTemplate jdbcTemplate;
 
     @Override
+    public void beforeJob(JobExecution jobExecution) {
+        if (jobExecution.getStatus() == BatchStatus.STARTED) {
+            logger.info("------JOB STARTED.------");
+        }
+    }
+
+    @Override
     public void afterJob(JobExecution jobExecution) {
         if (jobExecution.getStatus() == BatchStatus.COMPLETED) {
-            logger.info("----JOB FINISHED.----");
+            logger.info("------JOB FINISHED.------");
 
             jdbcTemplate
                     .query("SELECT ID, Name, Point, CouponCount FROM Customer", new DataClassRowMapper<>(Customer.class))
