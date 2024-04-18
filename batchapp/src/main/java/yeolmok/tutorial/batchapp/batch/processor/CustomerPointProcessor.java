@@ -3,8 +3,6 @@ package yeolmok.tutorial.batchapp.batch.processor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.item.ItemProcessor;
-import org.springframework.context.annotation.Bean;
-import org.springframework.stereotype.Component;
 import yeolmok.tutorial.batchapp.batch.record.Customer;
 
 public class CustomerPointProcessor implements ItemProcessor<Customer, Customer> {
