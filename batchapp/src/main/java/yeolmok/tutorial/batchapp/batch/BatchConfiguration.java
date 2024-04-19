@@ -86,7 +86,11 @@ public class BatchConfiguration {
      * Step
      * name과 함께 step 처리, 중복된 이름으로 step을 수행하려고 한다면 아래와 같은 로그 출력
      * Step already complete or not restartable, so no action to execute: StepExecution: id=1, version=3, name=step1, status=COMPLETED, exitStatus=COMPLETED, ...
-     */
+     *
+     * Restarting a Completed Step
+     * - allowStartIfComplete(true): 항상 실행해야 하는 작업(clear 작업 등)을 재시작할 수 있도록 해줌.
+     *
+     * */
     @Bean
     @Qualifier("pointStep")
     public Step pointStep(JobRepository jobRepository,
@@ -99,6 +103,7 @@ public class BatchConfiguration {
                 .reader(reader)
                 .processor(customerPointProcessor)
                 .writer(pointWriter)
+                .allowStartIfComplete(true)
                 .build();
     }
 
@@ -114,6 +119,7 @@ public class BatchConfiguration {
                 .reader(reader)
                 .processor(customerCouponProcessor)
                 .writer(couponWriter)
+                .allowStartIfComplete(true)
                 .build();
     }
 }
